@@ -1,71 +1,45 @@
 # CointMU CLI Reference
 
-The `cmu` CLI is the primary developer tool for scaffolding projects, compiling contracts, and deploying them to the CointMU network. It is designed to work with standard Solidity project layouts and to resolve contract dependencies dynamically from `node_modules`.
+The `cmu` CLI provides the core workflow for creating, compiling, deploying, auditing, and interacting with CointMU projects.
 
-## `cmu create`
+## Command Overview
 
-Scaffold a new smart contract project from a standard template.
+| Command             | Purpose                                                               |
+| ------------------- | --------------------------------------------------------------------- |
+| `cmu create`        | Scaffold a new CointMU project from a selectable template.            |
+| `cmu compile`       | Compile Solidity contracts and generate contract artifacts.           |
+| `cmu deploy`        | Execute deployment scripts sequentially from the `deploy/` directory. |
+| `cmu wallet create` | Generate a new wallet and print the address and private key.          |
+| `cmu node connect`  | Test connectivity to the configured JSON-RPC endpoint.                |
+| `cmu explorer open` | Open the configured block explorer in the default browser.            |
+| `cmu audit`         | Run dependency checks and Solidity static analysis.                   |
 
-Typical templates include:
+## Typical Workflow
 
-- `ERC20` for fungible tokens.
-- `ERC721` for non-fungible tokens.
-
-Example:
-
-```bash
-cmu create my-token --template erc20
-cmu create my-collectible --template erc721
-```
-
-What this command does:
-
-- Creates the project directory structure.
-- Installs or wires the expected Solidity source layout.
-- Adds a template contract, deployment entry point, and supporting configuration.
-- Prepares the project for compilation and deployment with the rest of the `cmu` toolchain.
-
-## `cmu compile`
-
-Compile Solidity contracts and resolve imports dynamically from `node_modules`.
-
-Example:
+Most CointMU projects follow this sequence:
 
 ```bash
+cmu create <project> [options]
+cd <project>
 cmu compile
-```
-
-Compilation behavior:
-
-- Scans the contract sources in the active project.
-- Resolves OpenZeppelin and other package-based imports from `node_modules`.
-- Emits build artifacts that can be consumed by deployment scripts.
-- Fails fast on syntax errors, unresolved imports, or incompatible Solidity versions.
-
-This import strategy allows contracts to reference dependency packages without hardcoding local relative paths into every source file.
-
-## `cmu deploy`
-
-Execute all deployment scripts found in the `deploy/` directory in sequential order against the configured local network.
-
-Example:
-
-```bash
 cmu deploy
 ```
 
-Deployment behavior:
+After deployment, you can use the remaining commands to validate and operate the project environment:
 
-- Loads each script in `deploy/` using deterministic ordering.
-- Runs scripts one after another rather than in parallel.
-- Targets the configured RPC endpoint for the active CointMU network, typically through the Nginx proxy on `http://<node-ip>:8585`.
-- Stops on the first failure so that broken state is surfaced immediately.
+- `cmu audit` for security review.
+- `cmu node connect` for RPC connectivity checks.
+- `cmu explorer open` for browser-based chain inspection.
+- `cmu wallet create` for generating local development wallets.
 
-This makes deployment predictable for multi-step setups where later scripts depend on addresses or artifacts produced by earlier scripts.
+## Command Reference
 
-## Recommended Workflow
+Use the linked pages for full command-specific behavior, options, and validation rules.
 
-1. Scaffold a project with `cmu create`.
-2. Add or customize the Solidity contracts.
-3. Run `cmu compile` to validate dependencies and generate artifacts.
-4. Run `cmu deploy` to publish contracts to the local CointMU network.
+- [cmu create](/docs/cli/create)
+- [cmu compile](/docs/cli/compile)
+- [cmu deploy](/docs/cli/deploy)
+- [cmu wallet create](/docs/cli/wallet)
+- [cmu node connect](/docs/cli/node)
+- [cmu explorer open](/docs/cli/explorer)
+- [cmu audit](/docs/cli/audit)
