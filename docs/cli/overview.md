@@ -58,7 +58,7 @@ Deployment behavior:
 
 - Loads each script in `deploy/` using deterministic ordering.
 - Runs scripts one after another rather than in parallel.
-- Targets the configured RPC endpoint for the active CointMU network.
+- Targets the configured RPC endpoint for the active CointMU network, typically through the Nginx proxy on `http://<node-ip>:8585`.
 - Stops on the first failure so that broken state is surfaced immediately.
 
 This makes deployment predictable for multi-step setups where later scripts depend on addresses or artifacts produced by earlier scripts.

@@ -8,10 +8,10 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /guide/introduction
+      link: /docs/guide/introduction
     - theme: alt
       text: View CLI Commands
-      link: /cli/overview
+      link: /docs/cli/overview
 
 features:
   - title: Private Node Security
