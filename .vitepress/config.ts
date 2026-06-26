@@ -31,7 +31,7 @@ export default defineConfig({
       {
         text: "CLI Tooling",
         items: [
-          { text: "CointMU CLI Reference", link: "/docs/cli/overview" },
+          { text: "CointMU CLI Overview", link: "/docs/cli/overview" },
           { text: "cmu create", link: "/docs/cli/create" },
           { text: "cmu compile", link: "/docs/cli/compile" },
           { text: "cmu deploy", link: "/docs/cli/deploy" },
@@ -40,6 +40,10 @@ export default defineConfig({
           { text: "cmu explorer open", link: "/docs/cli/explorer" },
           { text: "cmu audit", link: "/docs/cli/audit" },
         ],
+      },
+      {
+        text: "App",
+        items: [{ text: "CointMU App Overview", link: "/docs/app/overview" }],
       },
     ],
   },

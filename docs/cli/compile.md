@@ -8,16 +8,6 @@
 cmu compile
 ```
 
-## Overview
-
-The command performs a direct `solc` compilation pass over every `.sol` file found in the top-level `contracts/` directory.
-
-During compilation, it:
-
-- Loads optional compiler settings from `cmu.config.ts` or `cmu.config.js` when present.
-- Resolves imports from the project root and from `node_modules`.
-- Writes compiled artifacts for each contract into the `artifacts/` directory.
-
 ## Required Project Layout
 
 ```text
@@ -25,59 +15,62 @@ During compilation, it:
 ├─ contracts/
 │  └─ *.sol
 ├─ artifacts/
-├─ cmu.config.ts
-└─ cmu.config.js
+├─ cmu.config.ts   # optional
+└─ cmu.config.js   # optional
 ```
 
-The `contracts/` directory must exist. If it is missing, the command exits with an error and does not continue.
+::: warning
+The `contracts/` directory **must exist**. If it is missing, the command exits with an error and does not continue.
+:::
 
 ## Configuration Loading
 
-`cmu compile` looks for compiler settings in the following order:
+`cmu compile` looks for compiler settings in the following priority order:
 
 1. `cmu.config.ts`
 2. `cmu.config.js`
 
-If a configuration file is found, the command attempts to load `compiler.settings` from the exported config object.
+If a configuration file is found, the command loads `compiler.settings` from the exported config object and merges it into the compiler input before compilation.
 
-### Supported Settings
+**Default values when no config is provided:**
 
-The loaded settings are merged into the compiler input before compilation.
-
-- `outputSelection` is always set so that ABI and bytecode are emitted.
-- `evmVersion` defaults to `paris` when not provided by the config file.
+| Setting           | Default                        |
+| ----------------- | ------------------------------ |
+| `outputSelection` | ABI + bytecode always emitted. |
+| `evmVersion`      | `paris`                        |
 
 If the config file cannot be loaded, the command prints a warning and continues with defaults.
 
 ## Import Resolution
 
-The compiler uses a custom import callback to resolve Solidity dependencies.
+The compiler uses a custom import callback to resolve Solidity dependencies:
 
-- Local imports are resolved relative to the current working directory.
-- Package imports are resolved from `node_modules`.
+- **Local imports** — resolved relative to the current working directory.
+- **Package imports** — resolved from `node_modules`.
 
-```bash
+```solidity
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 ```
 
-This makes it possible to compile contracts that depend on installed Solidity libraries without rewriting import paths.
+This allows contracts that depend on installed Solidity libraries to compile without rewriting import paths.
 
 ## Compilation Behavior
 
-`cmu compile` scans the `contracts/` directory for files ending in `.sol`.
-
-- If no Solidity files are found, the command prints a notice and exits successfully.
-- If compiler errors are reported with severity `error`, the command stops and exits with failure.
-- Non-fatal warnings are printed but do not abort the build.
-
-When compilation succeeds, each contract artifact is written as JSON to `artifacts/<ContractName>.json`.
+| Condition                                  | Result                                              |
+| ------------------------------------------ | --------------------------------------------------- |
+| No `.sol` files found in `contracts/`      | Prints a notice and exits successfully.             |
+| Compiler error reported (severity `error`) | Stops the process and exits with failure.           |
+| Non-fatal warning                          | Prints the warning and continues compilation.       |
+| Compilation succeeds                       | Writes artifact to `artifacts/<ContractName>.json`. |
 
 ## Output Artifacts
 
-Each generated artifact includes the compiled contract metadata returned by `solc`, including:
+Each generated artifact contains the compiled contract metadata returned by `solc`, including:
 
-- ABI
-- bytecode
-- contract-level compilation output
+| Field      | Description                                     |
+| ---------- | ----------------------------------------------- |
+| `abi`      | Interface definition for contract interaction.  |
+| `bytecode` | Compiled contract binary for deployment.        |
+| Output     | Additional contract-level compilation metadata. |
 
-These artifacts are consumed by deployment scripts and other build-time tooling.
+These artifacts are consumed by deployment scripts and other build-time tooling in the pipeline.

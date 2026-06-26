@@ -1,6 +1,6 @@
 # CointMU CLI Reference
 
-The `cmu` CLI provides the core workflow for creating, compiling, deploying, auditing, and interacting with CointMU projects.
+`cmu` is an all-in-one CLI toolkit for building, compiling, deploying, and auditing Web3 applications on the CointMU private network ecosystem. It abstracts the complexity of blockchain execution into instant terminal commands.
 
 ## Command Overview
 
@@ -25,12 +25,14 @@ cmu compile
 cmu deploy
 ```
 
-After deployment, you can use the remaining commands to validate and operate the project environment:
+After deployment, use the remaining commands to validate and operate the project environment:
 
-- `cmu audit` for security review.
-- `cmu node connect` for RPC connectivity checks.
-- `cmu explorer open` for browser-based chain inspection.
-- `cmu wallet create` for generating local development wallets.
+| Command             | When to use                                           |
+| ------------------- | ----------------------------------------------------- |
+| `cmu audit`         | Security review for dependencies and smart contracts. |
+| `cmu node connect`  | Verify RPC endpoint connectivity.                     |
+| `cmu explorer open` | Inspect the chain via browser.                        |
+| `cmu wallet create` | Generate wallets for local development.               |
 
 ## Command Reference
 

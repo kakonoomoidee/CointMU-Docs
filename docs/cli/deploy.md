@@ -8,49 +8,48 @@
 cmu deploy
 ```
 
-## Overview
-
-The command scans the local `deploy/` folder, filters deployment scripts, sorts them lexicographically, and executes them one at a time.
-
-Supported script extensions:
-
-- `.ts`
-- `.js`
-
-This ordering allows files such as `01_init.ts` to run before `02_deploy.ts`.
-
 ## Requirements
 
 `cmu deploy` must be executed from the root of a CointMU project.
 
-- If `deploy/` does not exist, the command exits with an error.
+::: warning
+
+- If the `deploy/` directory does not exist, the command exits with an error.
 - If no matching scripts are found, the command prints a notice and exits successfully.
+  :::
+
+## Supported Script Extensions
+
+| Extension | Runtime    |
+| --------- | ---------- |
+| `.ts`     | TypeScript |
+| `.js`     | JavaScript |
+
+Scripts are sorted lexicographically before execution, so naming conventions like `01_init.ts` → `02_deploy.ts` work as expected.
 
 ## Execution Model
 
-Each deployment script is executed by `cmu deploy` in a child process with inherited standard I/O.
-
-The CLI resolves each script extension internally and selects the correct runtime automatically.
+Each deployment script is executed in a separate child process with inherited standard I/O. The CLI resolves each script extension internally and selects the correct runtime automatically.
 
 ```bash
 cmu deploy
 ```
 
-You should not invoke individual deployment scripts directly as the normal workflow.
+::: tip
+Do not invoke individual deployment scripts directly. Always use `cmu deploy` to ensure correct runtime resolution and sequential ordering.
+:::
 
 ## Sequential Behavior
 
-Deployment scripts are executed one after another.
-
 - The command waits for each script to finish before starting the next one.
-- If any script exits with a non-zero code, deployment stops immediately.
+- If any script exits with a non-zero exit code, deployment **stops immediately**.
 - The command reports the failing script name and the exit code.
 
 This makes the deployment pipeline deterministic and suitable for multi-step contract initialization.
 
 ## Success Output
 
-When all scripts complete successfully, the command prints a final confirmation message.
+When all scripts complete successfully:
 
 ```bash
 ✅ All deployment scripts executed successfully.
