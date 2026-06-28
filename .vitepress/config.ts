@@ -2,20 +2,22 @@ import { defineConfig } from "vitepress";
 
 /**
  * VitePress site configuration for the CointMU documentation portal.
- * It defines the global metadata, top navigation, and sidebar structure for the
- * core guides and CLI reference.
+ * Defines global metadata, top navigation, and sidebar structure
+ * for the core guides, CLI reference, and app documentation.
  */
 export default defineConfig({
   title: "CointMU Docs",
   description: "The official documentation for the CointMU ecosystem.",
+  head: [["link", { rel: "icon", href: "/images/logo.png" }]],
   themeConfig: {
     nav: [
       { text: "Guide", link: "/docs/guide/introduction" },
       { text: "CLI Reference", link: "/docs/cli/overview" },
+      { text: "App", link: "/docs/app/overview" },
     ],
     sidebar: [
       {
-        text: "Introduction",
+        text: "Getting Started",
         items: [{ text: "Introduction", link: "/docs/guide/introduction" }],
       },
       {
@@ -29,9 +31,9 @@ export default defineConfig({
         ],
       },
       {
-        text: "CLI Tooling",
+        text: "CLI Reference",
         items: [
-          { text: "CointMU CLI Overview", link: "/docs/cli/overview" },
+          { text: "Overview", link: "/docs/cli/overview" },
           { text: "cmu create", link: "/docs/cli/create" },
           { text: "cmu compile", link: "/docs/cli/compile" },
           { text: "cmu deploy", link: "/docs/cli/deploy" },
@@ -43,7 +45,14 @@ export default defineConfig({
       },
       {
         text: "App",
-        items: [{ text: "CointMU App Overview", link: "/docs/app/overview" }],
+        items: [
+          { text: "Overview", link: "/docs/app/overview" },
+          { text: "Dashboard & Network Stats", link: "/docs/app/dashboard" },
+          { text: "Multi-Asset Wallet", link: "/docs/app/wallet" },
+          { text: "Mining & Miner Distribution", link: "/docs/app/mining" },
+          { text: "Blockchain Explorer", link: "/docs/app/explorer" },
+          { text: "Self-Healing Embedded Node", link: "/docs/app/node" },
+        ],
       },
     ],
   },
