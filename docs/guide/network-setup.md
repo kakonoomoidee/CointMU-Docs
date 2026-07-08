@@ -2,19 +2,44 @@
 
 CointMU runs as a private Geth network with a fixed Chain ID of `1912`. The Chain ID is embedded in every signed transaction to prevent replay attacks and to ensure that all wallets, scripts, and deployment tools are bound to the CointMU chain only.
 
+## Prerequisites
+
+| Requirement   | Details                                                  |
+| ------------- | -------------------------------------------------------- |
+| Geth          | `1.10.26-stable` installed and available on `$PATH`.     |
+| Nginx         | Installed and running for reverse proxy configuration.   |
+| Genesis file  | A configured `genesis.json` with Chain ID `1912`.        |
+| Password file | A `password.txt` containing the account unlock password. |
+
 ## Genesis Configuration
 
-The genesis file defines the initial network state, including the consensus rules, pre-funded accounts, and the chain identity. For CointMU, the most important settings are:
+The genesis file defines the initial network state, including the consensus rules, pre-funded accounts, and the chain identity.
 
-- `chainId: 1912` in the `config` block.
-- A private network allocation suitable for local development or controlled deployment.
-- Any pre-funded deployer accounts required by your workflow.
+Critical fields for CointMU:
 
-A minimal genesis file should keep the network deterministic and stable across all nodes. Every node started against the same genesis must use the same `chainId` and genesis hash.
+| Field                   | Value     | Description                                               |
+| ----------------------- | --------- | --------------------------------------------------------- |
+| `config.chainId`        | `1912`    | Unique identifier binding all transactions to this chain. |
+| `config.homesteadBlock` | `0`       | Enables Homestead rules from block 0.                     |
+| `config.eip155Block`    | `0`       | Enables replay protection from block 0.                   |
+| `difficulty`            | Low value | Set low for fast local block production.                  |
+| `alloc`                 | —         | Pre-funded deployer accounts for development.             |
+
+Every node started against the same genesis must use the same `chainId` and genesis hash. Nodes with a mismatched genesis will be rejected by peers.
+
+## Initializing the Chain
+
+Before starting Geth for the first time, initialize the data directory with the genesis file:
+
+```bash
+geth --datadir ./data init ./genesis.json
+```
+
+This step only needs to be run once per data directory. Re-running it on an existing chain will fail unless the data directory is cleared first.
 
 ## Starting the Geth Node
 
-Use the following script to start the node with the JSON-RPC HTTP API exposed on port `8545`.
+Use the following script to start the node with the JSON-RPC HTTP API exposed on `127.0.0.1:8545`:
 
 ```bash
 #!/usr/bin/env bash
@@ -43,7 +68,13 @@ geth \
   --password ./password.txt
 ```
 
-The key operational detail is the HTTP endpoint on `127.0.0.1:8545`. The node should not be exposed directly to untrusted clients.
+::: warning
+`--http.corsdomain "*"` allows all origins. This is acceptable only when the node is bound to `127.0.0.1` and sits behind the Nginx proxy. Never expose the Geth HTTP API directly on a public interface.
+:::
+
+::: info
+`--allow-insecure-unlock` is required to unlock accounts over HTTP. This flag is intentional for a private development network and should not be used on public-facing nodes.
+:::
 
 ## Nginx Reverse Proxy
 
@@ -68,11 +99,19 @@ server {
 }
 ```
 
-This pattern keeps the Geth HTTP API reachable only through a controlled ingress path. Clients inside the whitelisted `10.x.x.x` network can connect to `http://10.64.24.248:8585`, while all other requests are rejected at the proxy boundary.
+**Access rules:**
+
+| Source             | Result                           |
+| ------------------ | -------------------------------- |
+| `10.x.x.x` network | Allowed — forwarded to Geth RPC. |
+| All other IPs      | Rejected at the proxy boundary.  |
+
+Clients inside the whitelisted network connect via `http://10.64.24.248:8585`. The raw Geth port `8545` remains inaccessible from outside the host.
 
 ## Operational Notes
 
-- Use `1912` consistently in wallets, deployment scripts, and local tooling.
-- Keep the Geth HTTP API bound to localhost when possible.
+- Use Chain ID `1912` consistently across all wallets, deployment scripts, and local tooling.
+- Keep the Geth HTTP API bound to `127.0.0.1` at all times.
 - Treat the Nginx proxy as the only external entry point for JSON-RPC access.
-- Start mining before sending transactions if the network does not produce blocks automatically.
+- Start the miner before sending transactions — if no blocks are being produced, transactions remain pending indefinitely.
+- Use `cmu node connect` to verify connectivity to the active RPC endpoint at any time.

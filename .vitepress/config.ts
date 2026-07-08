@@ -28,6 +28,10 @@ export default defineConfig({
             text: "Deploying Your First Token",
             link: "/docs/guide/deploying-first-token",
           },
+          {
+            text: "Supported Libraries",
+            link: "/docs/guide/supported-libraries",
+          },
         ],
       },
       {

@@ -1,37 +1,66 @@
 # Deploying Your First Token
 
-This guide shows how to create and deploy a basic ERC20 token on CointMU using OpenZeppelin and the `cmu` CLI.
+This guide walks through creating and deploying a basic ERC20 token on CointMU using OpenZeppelin `4.9.x` and the `cmu` CLI.
 
 ## Prerequisites
 
-- A running CointMU Geth node on Chain ID `1912`.
-- The Nginx proxy available at `http://10.64.24.248:8585`.
-- A funded deployer account unlocked in the local node.
-- The miner started so transactions are included in blocks.
+| Requirement             | Details                                                                     |
+| ----------------------- | --------------------------------------------------------------------------- |
+| Running CointMU node    | Geth `1.10.26` running on Chain ID `1912`.                                  |
+| Nginx proxy             | Available at `http://10.64.24.248:8585`.                                    |
+| Funded deployer account | Unlocked in the local node with sufficient CMU for gas.                     |
+| Active miner            | At least one miner running so transactions are included in blocks.          |
+| CointMU project         | A project scaffolded with `cmu create` or an existing compatible structure. |
 
-## 1. Create the Token Contract
+## 1. Scaffold the Project
 
-Use OpenZeppelin's ERC20 implementation as the foundation for the token.
+If you don't have an existing project, create one using the `erc20` template:
+
+```bash
+cmu create my-token --template erc20 --language typescript
+cd my-token
+```
+
+This generates the full project structure including `contracts/`, `deploy/`, and `artifacts/`.
+
+## 2. Install Dependencies
+
+```bash
+npm install
+npm install @openzeppelin/contracts@4.9.6
+```
+
+::: warning
+Do not install `@openzeppelin/contracts@5.x`. Version 5 requires `solc 0.8.20+` which emits the `PUSH0` opcode, causing an `invalid opcode` error on Geth `1.10.26`. Always use `4.9.x`.
+
+See [Supported Libraries](/docs/guide/supported-libraries) for the full compatibility reference.
+:::
+
+## 3. Write the Token Contract
+
+Create the token contract in `contracts/CMUS.sol`:
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract CMUS is ERC20, Ownable {
-    constructor() ERC20("CointMU Token", "CMUS") Ownable(msg.sender) {
+    constructor() ERC20("CointMU Token", "CMUS") {
         _mint(msg.sender, 1_000_000 * 10 ** decimals());
     }
 }
 ```
 
-This example creates `CMUS` with an initial supply minted to the deployer.
+::: info
+The pragma is set to `^0.8.0` rather than `^0.8.20` to ensure compatibility with the `paris` EVM target used by `cmu compile`. Using `^0.8.20` or higher will produce bytecode that fails on Geth `1.10.26`.
+:::
 
-## 2. Add the Deployment Script
+## 4. Add the Deployment Script
 
-Place the deployment script in the `deploy/` directory and point it at the Nginx proxy URL.
+Create `deploy/01_deploy_cmus.ts` and point it at the Nginx proxy URL:
 
 ```typescript
 import { ethers } from "ethers";
@@ -39,21 +68,21 @@ import fs from "node:fs";
 import path from "node:path";
 
 async function main() {
-  const rpcUrl = "http://10.64.24.248:8585";
+  const rpcUrl = process.env.CMU_RPC_URL ?? "http://10.64.24.248:8585";
   const provider = new ethers.JsonRpcProvider(rpcUrl, 1912);
-  const wallet = new ethers.Wallet(
-    process.env.DEPLOYER_PRIVATE_KEY as string,
-    provider,
-  );
+
+  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY as string, provider);
 
   const artifactPath = path.resolve("artifacts", "CMUS.json");
   const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+
   const factory = new ethers.ContractFactory(
     artifact.abi,
-    artifact.bytecode,
+    artifact.evm.bytecode.object,
     wallet,
   );
 
+  console.log("Deploying CMUS token...");
   const token = await factory.deploy();
   await token.waitForDeployment();
 
@@ -66,38 +95,87 @@ main().catch((error) => {
 });
 ```
 
-The script uses the proxy endpoint rather than the raw Geth port so that all RPC traffic passes through the IP whitelist and proxy controls.
+::: tip
+The script reads `CMU_RPC_URL` and `PRIVATE_KEY` from environment variables. These are injected automatically by `cmu deploy` — no manual `.env` configuration is needed when running through the CLI.
+:::
 
-## 3. Compile the Project
+## 5. Start the Miner
 
-Run the CLI compiler before deployment so the artifacts are available.
+Before deploying, ensure the network is actively producing blocks. Open the Geth console and start the miner:
+
+```bash
+geth attach ./data/geth.ipc
+```
+
+```js
+miner.start(1);
+```
+
+Or use the `cmu` CLI if you have a session active:
+
+```bash
+cmu mine start
+```
+
+If no miner is running, the deployment transaction remains pending and the contract will never be mined into a block.
+
+## 6. Compile
 
 ```bash
 cmu compile
 ```
 
-If the contract imports OpenZeppelin packages, `cmu compile` resolves them dynamically from `node_modules`.
+`cmu compile` resolves OpenZeppelin imports from `node_modules` automatically. Compiled artifacts are written to `artifacts/CMUS.json`.
 
-## 4. Deploy the Token
-
-Run the deployment pipeline after compilation.
+## 7. Deploy
 
 ```bash
 cmu deploy
 ```
 
-The deployment command executes each file in `deploy/` sequentially, which is useful when the token deployment depends on earlier initialization steps.
+`cmu deploy` triggers a recompile, loads network configuration from the active session, and executes `deploy/01_deploy_cmus.ts` sequentially.
 
-## 5. Start Mining
-
-Before sending the deployment transaction, open the Geth console and start the miner.
+**Expected output:**
 
 ```bash
-miner.start(1)
+Triggering automated contract compilation...
+Compiled CMUS successfully.
+
+--- Deployment Metadata ---
+Network Name  : cointmu
+RPC URL       : http://10.64.24.248:8585
+Chain ID      : 1912
+Deployer      : 0x...
+---------------------------
+
+========================================
+Executing: 01_deploy_cmus.ts
+========================================
+
+Deploying CMUS token...
+CMUS deployed to: 0x...
+
+All deployment scripts executed successfully.
 ```
 
-If mining is not active, the transaction may remain pending and the contract will not be mined into a block.
+## 8. Verify the Deployment
 
-## Verification
+After deployment, confirm the contract is live by checking the deployed address in the Explorer or querying it directly:
 
-After deployment, confirm the contract address in the CLI output and verify the token metadata from a wallet or script connected to the same Chain ID `1912`.
+```typescript
+const token = new ethers.Contract(
+  "0x<deployed_address>",
+  artifact.abi,
+  provider,
+);
+
+console.log("Name:", await token.name());
+console.log("Symbol:", await token.symbol());
+console.log("Total Supply:", ethers.formatEther(await token.totalSupply()));
+```
+
+You can also open the block explorer via:
+
+```bash
+cmu explorer open
+```
