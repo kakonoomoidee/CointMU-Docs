@@ -57,7 +57,7 @@ Before getting started, ensure the following are in place:
 
 Once your environment is ready, start with the CLI reference to scaffold your first CointMU project:
 
-- [CLI Overview](/cli/overview)
-- [cmu create](/cli/create)
-- [cmu compile](/cli/compile)
-- [cmu deploy](/cli/deploy)
+- [CLI Overview](/docs/cli/overview)
+- [cmu create](/docs/cli/create)
+- [cmu compile](/docs/cli/compile)
+- [cmu deploy](/docs/cli/deploy)
