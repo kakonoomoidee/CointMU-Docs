@@ -5,18 +5,18 @@
 ## Usage
 
 ```bash
-cmu create <project> [options]
+cmu create [project] [options]
 ```
 
 ## Arguments
 
-| Argument    | Description                                  |
-| ----------- | -------------------------------------------- |
-| `<project>` | The name of the project directory to create. |
+| Argument    | Description                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------- |
+| `[project]` | The name of the project directory to create. Optional — if omitted, the command prompts for it interactively. |
 
-**Validation rules:**
+**Project name validation rules:**
 
-- Must not contain path separators (`/` or `\`).
+- Only alphanumeric characters, hyphens (`-`), and underscores (`_`) are allowed.
 - The target directory must not already exist.
 - The project path is resolved against the current working directory before generation begins.
 
@@ -31,13 +31,15 @@ If validation fails, the command exits before any files are generated.
 
 ## Interactive Mode
 
-If `--template` or `--language` is omitted, the command prompts for the missing value using Inquirer.
+If `[project]`, `--language`, or `--template` is omitted, the command prompts for each missing value using Inquirer.
 
-- Template selection is presented as a list prompt.
-- Language selection is presented as a list prompt.
-- The command resumes after both values are resolved.
+Prompt order:
 
-Both selections are validated against the scaffold registry before project generation begins.
+1. **Project name** — if not provided as an argument.
+2. **Language** — if `--language` is not provided.
+3. **Template** — if `--template` is not provided.
+
+All values are validated against their respective allowed values before project generation begins.
 
 ## Available Templates
 
@@ -55,12 +57,19 @@ Both selections are validated against the scaffold registry before project gener
 | `kyberion`    | Post-quantum cryptography research prototype.                                                  |
 | `nft`         | Alias for `erc721`.                                                                            |
 
-## Post-Creation Workflow
+## Post-Creation Output
 
-After a successful scaffold, the CLI prints the standard next steps:
+After a successful scaffold, the CLI prints a confirmation banner and the standard next steps:
 
 ```bash
-cd <project>
-cmu compile
-cmu deploy
+[SUCCESS] CointMU project '<project>' initialized!
+
+[>] Next steps to start building:
+  1. cd <project>
+  2. cmu compile
+  3. cmu deploy
 ```
+
+::: tip
+A random motivational quote is printed after each successful project creation.
+:::

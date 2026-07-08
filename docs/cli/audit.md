@@ -16,7 +16,7 @@ cmu audit [options]
 
 ## Audit Workflow
 
-`cmu audit` performs two sequential checks.
+`cmu audit` performs two sequential checks. Both steps always run to completion — a finding in Step 1 does not abort Step 2.
 
 ### Step 1: Dependency Audit
 
@@ -29,13 +29,15 @@ npm audit fix  # when --fix is provided
 
 If `--fix` is provided, the command appends `fix` and attempts to remediate safe dependency issues automatically.
 
+If the dependency audit reports issues, a warning is printed and the command continues to Step 2 without exiting.
+
 ::: tip
 If you only need to inspect package dependencies directly, you can still run `npm audit` outside of the `cmu` workflow.
 :::
 
 ### Step 2: Static Analysis
 
-The command then executes `npx solhint` to analyze Solidity contracts under the `contracts/` directory.
+The command executes `npx solhint` to analyze Solidity contracts under the `contracts/` directory.
 
 ```bash
 npx solhint "contracts/**/*.sol"
@@ -44,7 +46,23 @@ npx solhint "contracts/**/*.sol" --fix  # when --fix is provided
 
 If `--fix` is provided, the command appends `--fix` and applies safe linting corrections where supported.
 
-This step checks Solidity sources for security issues, lint violations, and formatting problems.
+If static analysis finds vulnerabilities or formatting issues, a warning is printed and the audit is marked as completed.
+
+## Output
+
+The command prints a step indicator for each phase during execution:
+
+```bash
+[1/2] Auditing Node.js Dependencies
+[2/2] Static Analysis of Solidity Contracts
+[+] Audit process completed.
+```
+
+If an unexpected error prevents the audit from running entirely, the command prints an error message and exits with code `1`.
+
+::: warning
+A completed audit does not mean the project is free of issues. Review all warnings printed during each step before proceeding to deployment.
+:::
 
 ## Audit Summary
 
