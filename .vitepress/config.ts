@@ -38,6 +38,7 @@ export default defineConfig({
         text: "CLI Reference",
         items: [
           { text: "Overview", link: "/docs/cli/overview" },
+          { text: "Installation", link: "/docs/cli/installation" },
           { text: "cmu create", link: "/docs/cli/create" },
           { text: "cmu compile", link: "/docs/cli/compile" },
           { text: "cmu deploy", link: "/docs/cli/deploy" },
@@ -55,6 +56,7 @@ export default defineConfig({
         text: "App",
         items: [
           { text: "Overview", link: "/docs/app/overview" },
+          { text: "Installation", link: "/docs/app/installation" },
           { text: "Dashboard & Network Stats", link: "/docs/app/dashboard" },
           { text: "Multi-Asset Wallet", link: "/docs/app/wallet" },
           { text: "Mining & Miner Distribution", link: "/docs/app/mining" },
