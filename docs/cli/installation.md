@@ -15,7 +15,7 @@
 Install the CLI globally to make the `cmu` command available system-wide:
 
 ```bash
-npm install -g cmu-cli
+npm install -g cointmu-cli
 ```
 
 Verify the installation:
