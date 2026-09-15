@@ -28,6 +28,7 @@ If validation fails, the command exits before any files are generated.
 | --------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `-t, --template <template>` | Select the scaffold template to generate.     | `blank`, `erc20`, `erc721`, `erc1155`, `dao`, `marketplace`, `staking`, `airdrop`, `vault`, `kyberion`, `nft` |
 | `-l, --language <language>` | Select the project language for the scaffold. | `typescript`, `javascript`                                                                                    |
+| `-v, --verbose`             | Enable verbose logging for debugging.         | —                                                                                                             |
 
 ## Interactive Mode
 
@@ -56,6 +57,26 @@ All values are validated against their respective allowed values before project 
 | `vault`       | Multisig timelock treasury project.                                                            |
 | `kyberion`    | Post-quantum cryptography research prototype.                                                  |
 | `nft`         | Alias for `erc721`.                                                                            |
+
+::: info
+`nft` is accepted by `--template` but is not offered in the interactive picker and is not listed in the command's own `-h` output. It generates exactly the same project as `erc721`.
+:::
+
+## Dependency Installation
+
+After the files are written, `cmu create` runs `npm install` inside the new project directory and installs its baseline dependencies:
+
+| Dependency set | Packages                                                            |
+| -------------- | ------------------------------------------------------------------- |
+| Runtime        | `ethers`                                                            |
+| TypeScript dev | `@types/node`, `mocha`, `chai`, `@types/mocha`, `@types/chai`, `ts-node`, `typescript@5` |
+| JavaScript dev | `mocha`, `chai`                                                     |
+
+Installer output is streamed directly to the terminal, so the command takes noticeably longer than file generation alone.
+
+::: info
+Built-in contract templates are self-contained and pull in no Solidity dependencies. Install those separately if you extend a template — see [Supported Libraries](/docs/guide/supported-libraries).
+:::
 
 ## Post-Creation Output
 

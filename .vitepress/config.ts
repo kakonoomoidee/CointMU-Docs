@@ -50,6 +50,7 @@ export default defineConfig({
           { text: "cmu node", link: "/docs/cli/node" },
           { text: "cmu explorer", link: "/docs/cli/explorer" },
           { text: "cmu version", link: "/docs/cli/version" },
+          { text: "cmu update", link: "/docs/cli/update" },
         ],
       },
       {

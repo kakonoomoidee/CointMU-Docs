@@ -1,0 +1,92 @@
+# cmu update
+
+`cmu update` upgrades the globally installed CointMU CLI to the latest release published on the npm registry, or to a specific version you pin.
+
+## Usage
+
+```bash
+cmu update [options]
+```
+
+## Options
+
+| Flag              | Description                                                  |
+| ----------------- | ------------------------------------------------------------ |
+| `--to <version>`  | Install a specific published version instead of the latest.  |
+| `-v, --verbose`   | Enable verbose logging for debugging.                        |
+
+## Update Workflow
+
+The command performs the following steps in order:
+
+1. Reads the version of the currently installed CLI from its own `package.json`. If the file cannot be read, the current version is reported as `unknown`.
+2. Queries the npm registry with `npm view cointmu-cli version` to resolve the target version. With `--to`, the spec becomes `cointmu-cli@<version>`.
+3. Prints the current and target versions for comparison.
+4. Exits without changes if the two are identical.
+5. Otherwise runs `npm install -g cointmu-cli@<target>` and streams the installer output directly to the terminal.
+
+## Pinning a Version
+
+`--to` accepts an exact version, a semver range, or an npm dist-tag:
+
+```bash
+cmu update --to 1.3.2
+cmu update --to ">=1.3.0"
+cmu update --to latest
+```
+
+When a range matches several published versions, the highest match is selected and installed as an exact version.
+
+If the requested version is not published, the command exits with:
+
+```bash
+Version "9.9.9" is not available on the npm registry for cointmu-cli.
+```
+
+::: warning
+The `--to` value is validated before it reaches npm. Values containing shell metacharacters, or beginning with `-`, are rejected outright:
+
+```bash
+Invalid --to value "<value>". Expected a semver version, range, or npm dist-tag (e.g. "1.3.2", ">=1.3.0", "latest").
+```
+
+This is a defense-in-depth check. The command never invokes a shell — both the registry query and the install run through a direct process call with an explicit argument list.
+:::
+
+## Output
+
+When an update is available:
+
+```bash
+Checking the npm registry for the target version...
+current version : 1.3.3
+target version  : 1.3.4
+
+Executing: npm install -g cointmu-cli@1.3.4
+
+Update completed successfully!
+```
+
+When the installed version already matches the target:
+
+```bash
+Checking the npm registry for the target version...
+current version : 1.3.4
+target version  : 1.3.4
+
+Already on the target version. Nothing to do.
+```
+
+If the registry is unreachable, the version is invalid, or the global install fails, the command prints an error message and exits with code `1`.
+
+::: info
+`cmu update` only manages installations made through npm. If the CLI was installed from source with `npm install -g .`, pull the repository and rebuild instead. See [Installation](/docs/cli/installation).
+:::
+
+## Verifying the Update
+
+Confirm the new version after the install completes:
+
+```bash
+cmu version
+```

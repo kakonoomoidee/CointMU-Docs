@@ -29,6 +29,7 @@ cmu deploy [options]
 | `-c, --config`         | Display the current deployment configuration and exit without deploying. |
 | `-p, --ping`           | Ping the configured RPC endpoint to verify connectivity and exit.        |
 | `-n, --network <name>` | Specify the target network to deploy to.                                 |
+| `-v, --verbose`        | Enable verbose logging for debugging.                                    |
 
 ## Pre-Deployment Steps
 

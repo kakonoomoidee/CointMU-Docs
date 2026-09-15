@@ -10,9 +10,10 @@ cmu audit [options]
 
 ## Options
 
-| Flag    | Description                                                                                     |
-| ------- | ----------------------------------------------------------------------------------------------- |
-| `--fix` | Automatically applies safe patches where the underlying tools support non-breaking remediation. |
+| Flag            | Description                                                                                     |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| `--fix`         | Automatically applies safe patches where the underlying tools support non-breaking remediation. |
+| `-v, --verbose` | Enable verbose logging for debugging.                                                           |
 
 ## Audit Workflow
 
