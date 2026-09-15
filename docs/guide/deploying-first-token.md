@@ -42,7 +42,7 @@ Create the token contract in `contracts/CMUS.sol`:
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -55,7 +55,7 @@ contract CMUS is ERC20, Ownable {
 ```
 
 ::: info
-The pragma is set to `^0.8.0` rather than `^0.8.20` to ensure compatibility with the `paris` EVM target used by `cmu compile`. Using `^0.8.20` or higher will produce bytecode that fails on Geth `1.10.26`.
+The pragma matches the `^0.8.20` used by every built-in template. Compatibility with Geth `1.10.26` comes from the EVM target rather than the pragma: `cmu compile` sets `evmVersion: "paris"`, which suppresses the `PUSH0` opcode that the compiler would otherwise emit under its default `shanghai` target. See [Supported Libraries](/docs/guide/supported-libraries).
 :::
 
 ## 4. Add the Deployment Script

@@ -5,8 +5,14 @@
 ## Usage
 
 ```bash
-cmu compile
+cmu compile [options]
 ```
+
+## Options
+
+| Flag            | Description                            |
+| --------------- | -------------------------------------- |
+| `-v, --verbose` | Enable verbose logging for debugging.  |
 
 ## Required Project Layout
 
@@ -23,6 +29,10 @@ cmu compile
 The `contracts/` directory **must exist**. If it is missing, the command exits with an error and does not continue.
 :::
 
+::: info
+Only `.sol` files at the **top level** of `contracts/` are compiled. Sources placed in subdirectories are not discovered, although they can still be pulled into a compilation unit through an `import` statement.
+:::
+
 ## Configuration Loading
 
 `cmu compile` looks for compiler settings in the following priority order:
@@ -37,7 +47,7 @@ If a configuration file is found, the command loads `compiler.settings` from the
 export default {
   compiler: {
     settings: {
-      evmVersion: "london",
+      evmVersion: "paris",
     },
   },
 };
@@ -55,6 +65,14 @@ When a `.ts` config file is detected, the command loads it using `ts-node` in tr
 | `outputSelection` | ABI + `evm.bytecode.object` always emitted. |
 
 If the config file cannot be loaded, the command prints a warning and continues with defaults.
+
+::: warning
+`outputSelection` is applied **after** your settings are merged, so a custom value in `cmu.config` is always overridden. Every other key in `compiler.settings`, including `evmVersion` and `optimizer`, is honored.
+:::
+
+::: info
+Only `compiler.settings` is read from the configuration. The `compiler.version` key written by `cmu create` is not consulted — the compiler version is determined by the `solc` build bundled with the CLI, which `cmu version` reports.
+:::
 
 ## Import Resolution
 

@@ -5,8 +5,20 @@
 ## Usage
 
 ```bash
-cmu mine <subcommand>
+cmu mine <subcommand> [options]
 ```
+
+## Options
+
+Both `cmu mine` subcommands accept the same option:
+
+| Flag            | Description                            |
+| --------------- | -------------------------------------- |
+| `-v, --verbose` | Enable verbose logging for debugging.  |
+
+::: info
+The flag belongs to the subcommand, not to `cmu mine` itself. Write `cmu mine start -v`, not `cmu mine -v start`.
+:::
 
 ## Subcommands
 

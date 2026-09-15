@@ -188,11 +188,15 @@ npm install web3
 
 ## Safe Solidity Pragma Guide
 
-| Target                | Safe Pragma                | Notes                                       |
-| --------------------- | -------------------------- | ------------------------------------------- |
-| Maximum compatibility | `pragma solidity ^0.8.0;`  | Works across all `0.8.x` versions.          |
-| Pinned safe ceiling   | `pragma solidity ^0.8.19;` | Highest version that does not emit `PUSH0`. |
-| Unsafe on CointMU     | `pragma solidity ^0.8.20;` | Emits `PUSH0` by default. Do not use.       |
+| Target                     | Safe Pragma                | Notes                                                                             |
+| -------------------------- | -------------------------- | --------------------------------------------------------------------------------- |
+| Maximum compatibility      | `pragma solidity ^0.8.0;`  | Works across all `0.8.x` versions.                                                |
+| Pinned safe ceiling        | `pragma solidity ^0.8.19;` | Highest version that never emits `PUSH0`, whatever the EVM target.                |
+| Default for `cmu compile`  | `pragma solidity ^0.8.20;` | Safe through `cmu compile`, which pins `evmVersion: "paris"`. Used by every built-in template. |
+
+::: warning
+The pragma alone does not determine whether `PUSH0` is emitted — the **EVM target** does. A `^0.8.20` contract is safe when compiled with `evmVersion: "paris"` and unsafe under the compiler's default `shanghai` target. Pin the pragma to `^0.8.19` only when the contract may be compiled outside `cmu compile`, where that guarantee does not apply.
+:::
 
 ---
 

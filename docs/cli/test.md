@@ -10,9 +10,11 @@ cmu test [options]
 
 ## Options
 
-| Flag    | Description                                                                  |
-| ------- | ---------------------------------------------------------------------------- |
-| `--gas` | Enable the gas profiler to report gas consumed per transaction during tests. |
+| Flag            | Description                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `--gas`         | Enable the gas profiler to report gas consumed per transaction during tests.                                       |
+| `--allow-cors`  | Allow browser (cross-origin) access to the local test RPC proxy. Off by default to prevent DNS-rebinding attacks.   |
+| `-v, --verbose` | Enable verbose logging for debugging.                                                                              |
 
 ## Requirements
 
@@ -29,7 +31,7 @@ If the `test/` directory does not exist, the command exits with an error before 
 Before running any test file, the command performs the following steps automatically:
 
 1. **Compile** — triggers `cmu compile` to ensure all contract artifacts are up to date.
-2. **Start ephemeral DevNet** — spins up a Ganache instance on port `8555` with Chain ID `1912`.
+2. **Start ephemeral DevNet** — starts an in-process EVM network and fronts it with a local JSON-RPC proxy on port `8555` with Chain ID `1912`.
 3. **Inject environment** — passes network credentials to the test process via environment variables.
 
 ## Ephemeral DevNet
@@ -41,11 +43,31 @@ The test DevNet is created fresh for every `cmu test` run and destroyed immediat
 | RPC URL         | `http://127.0.0.1:8555` |
 | Chain ID        | `1912`                  |
 | Accounts        | 10 pre-funded accounts  |
-| Default Balance | `100 CMU` each          |
+| Default Balance | `100 ETH` each          |
 | Mining Mode     | Strict instamine        |
 | Logging         | Quiet (suppressed)      |
 
-The first generated account's private key is automatically used as the deployer for test transactions.
+The first generated account's private key is automatically used as the deployer for test transactions. Accounts are derived from a random mnemonic on every run, so the deployer address differs between invocations.
+
+::: info
+On Windows, a process already holding port `8555` is detected and terminated before the proxy binds. On Linux and macOS this reclaim step is a no-op and always reports the port as free, so free the port manually if the proxy fails to start.
+:::
+
+## RPC Access Control
+
+The test RPC proxy listens only on `127.0.0.1` and additionally rejects requests that look like they originate from a web page. A request is refused when it carries an `Origin` header, or when its `Host` header is not one of `127.0.0.1:8555`, `localhost:8555`, or `[::1]:8555`.
+
+Refused requests receive HTTP `403` with a JSON-RPC error of code `-32600`:
+
+```bash
+Forbidden: cross-origin or non-local request rejected. Pass --allow-cors to cmu test for browser access.
+```
+
+This protects the unlocked test accounts from DNS-rebinding attacks, where a malicious page resolves its own hostname to `127.0.0.1` and issues signed transactions against the local node.
+
+::: danger WARNING
+`--allow-cors` disables that protection and responds with `Access-Control-Allow-Origin: *`, letting **any** website reach the test RPC and its pre-funded accounts while `cmu test` is running. Use it only when a browser-based test harness genuinely requires it. The command prints a warning at startup when the flag is active.
+:::
 
 ## Environment Injection
 

@@ -49,7 +49,7 @@ Before getting started, ensure the following are in place:
 
 | Requirement           | Details                                                                    |
 | --------------------- | -------------------------------------------------------------------------- |
-| Node.js               | Required to run the `cmu` CLI and project tooling.                         |
+| Node.js               | Version 20 or later. Required to run the `cmu` CLI and project tooling.    |
 | Network access        | Access to the local CointMU network segment or an approved VPN connection. |
 | Proxy endpoint access | Connectivity to the Nginx proxy endpoint exposed by the node operator.     |
 

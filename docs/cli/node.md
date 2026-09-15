@@ -8,18 +8,27 @@
 cmu node [options] <subcommand>
 ```
 
-## Global Options
+## Parent Options
 
 | Flag            | Description                                                                                                                                        |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-v, --verbose` | Enable verbose logging for all `cmu node` subcommands. When set, suppressed internal warnings from native dependencies are printed to the console. |
+
+::: info
+`-v, --verbose` is declared on `cmu node` itself rather than on the individual subcommands, so a single flag covers the whole command tree. It is accepted on either side of the subcommand name:
+
+```bash
+cmu node -v start
+cmu node start -v
+```
+:::
 
 ## Subcommands
 
 | Subcommand         | Description                                                  |
 | ------------------ | ------------------------------------------------------------ |
 | `cmu node connect` | Ping the configured RPC endpoint to test connectivity.       |
-| `cmu node start`   | Start a local Ganache-based DevNet with pre-funded accounts. |
+| `cmu node start`   | Start a local DevNet with pre-funded accounts.               |
 
 ---
 
@@ -89,12 +98,16 @@ cmu node start [options]
 
 On startup, the DevNet:
 
-- Spins up a Ganache server on the specified host and port.
-- Creates **10 pre-funded accounts** with **100 CMU each**.
+- Binds a local EVM node to the specified host and port.
+- Creates **10 pre-funded accounts** with **100 ETH each**, derived from the mnemonic at `m/44'/60'/0'/0/<index>`.
 - Uses Chain ID `1912` to match the CointMU network.
 - Operates in **strict instamine mode** — transactions are mined immediately and deterministically.
 - Prints the active mnemonic and a full account table to the console.
 - Shuts down gracefully on `SIGINT` (`Ctrl+C`).
+
+::: warning
+The default port `8585` is the same port the Nginx security proxy binds to in a full [network setup](/docs/guide/network-setup). Pass `-p` to choose another port when running a DevNet on a host that also serves the proxy.
+:::
 
 ### Output
 

@@ -5,8 +5,20 @@
 ## Usage
 
 ```bash
-cmu wallet <subcommand>
+cmu wallet <subcommand> [options]
 ```
+
+## Options
+
+Every `cmu wallet` subcommand accepts the same option:
+
+| Flag            | Description                            |
+| --------------- | -------------------------------------- |
+| `-v, --verbose` | Enable verbose logging for debugging.  |
+
+::: info
+The flag belongs to the subcommand, not to `cmu wallet` itself. Write `cmu wallet login -v`, not `cmu wallet -v login`.
+:::
 
 ## Subcommands
 
@@ -54,7 +66,7 @@ This command prints the **private key and mnemonic phrase directly in the termin
 
 ## cmu wallet login
 
-Authenticates into an existing wallet using its private key and creates an AES-256-CBC encrypted session file at `.cmu-session`.
+Authenticates into an existing wallet using its private key and creates an AES-256-GCM encrypted session file at `.cmu-session`.
 
 ### Usage
 
@@ -69,15 +81,26 @@ The command prompts for two inputs:
 | Prompt           | Description                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------ |
 | Private Key      | The wallet's private key. Input is masked. Validated as a valid EVM key before proceeding. |
-| Session Password | A password used to encrypt the private key in the session file. Minimum 6 characters.      |
+| Session Password | A password used to encrypt the private key in the session file. Must satisfy the password policy below. |
+
+**Password policy:**
+
+- Minimum **12 characters**.
+- At least **two** of the following character classes: lowercase, uppercase, digits, symbols.
+- Must not appear in the CLI's built-in list of common weak passwords.
 
 The private key is encrypted using:
 
-- **Algorithm** — `AES-256-CBC`
-- **Key derivation** — `PBKDF2` with `SHA-256`, 100,000 iterations, random 16-byte salt
-- **IV** — random 16-byte initialization vector per session
+- **Algorithm** — `AES-256-GCM`
+- **Key derivation** — `PBKDF2` with `SHA-256`, 600,000 iterations, random 16-byte salt
+- **IV** — random 12-byte initialization vector per session
+- **Authentication** — a GCM authentication tag is stored alongside the ciphertext
 
-The resulting session file (`.cmu-session`) stores the encrypted key, salt, IV, wallet address, and active network name.
+The resulting session file (`.cmu-session`) stores the encrypted key, salt, IV, authentication tag, iteration count, wallet address, and active network name. It is written with `0600` permissions so it is readable only by the owning user.
+
+::: info
+Sessions created before the iteration count was recorded are read back at the legacy work factor of 100,000 iterations. Running `cmu wallet login` again rewrites the session at the current 600,000-iteration default.
+:::
 
 ### Output
 
@@ -87,7 +110,7 @@ Logged in as: 0x...
 ```
 
 ::: info
-The default active network after login is set to `local`. Use `cmu network --use <name>` to switch to a different network.
+The default active network after login is set to `local`. Use [`cmu network --use <name>`](/docs/cli/network) to switch to a different network.
 :::
 
 ---
@@ -148,14 +171,16 @@ RPC Endpoint:   http://localhost:8545
 
 `cmu wallet login` writes a `.cmu-session` file to the current working directory. This file is required by several other `cmu` commands including `cmu mine`, `cmu network`, and `cmu wallet balance`.
 
-| Field           | Description                                               |
-| --------------- | --------------------------------------------------------- |
-| `address`       | The public address of the logged-in wallet.               |
-| `activeNetwork` | The name of the currently selected network.               |
-| `encryptedKey`  | The AES-256-CBC encrypted private key.                    |
-| `salt`          | Hex-encoded PBKDF2 salt used for key derivation.          |
-| `iv`            | Hex-encoded initialization vector used during encryption. |
+| Field           | Description                                                        |
+| --------------- | ------------------------------------------------------------------ |
+| `address`       | The public address of the logged-in wallet.                        |
+| `activeNetwork` | The name of the currently selected network.                        |
+| `encryptedKey`  | The AES-256-GCM encrypted private key.                             |
+| `salt`          | Hex-encoded PBKDF2 salt used for key derivation.                   |
+| `iv`            | Hex-encoded initialization vector used during encryption.          |
+| `authTag`       | Hex-encoded GCM authentication tag. A tampered file is rejected.   |
+| `iterations`    | PBKDF2 work factor used for this session. Absent on legacy files.  |
 
 ::: warning
-`.cmu-session` contains encrypted key material. Do not commit this file to version control. Add it to `.gitignore`.
+`.cmu-session` contains encrypted key material. Do not commit this file to version control. Projects scaffolded with `cmu create` already list it in the generated `.gitignore`.
 :::
